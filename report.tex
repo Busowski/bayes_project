@@ -1,0 +1,284 @@
+ \documentclass[tablecaption=bottom,wcp]{jmlr} % W&CP article
+
+
+\usepackage[T2A]{fontenc}
+\usepackage[utf8x]{inputenc}
+\usepackage[english]{babel}
+\usepackage{fullpage}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{algorithm}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage[demo]{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+
+
+
+
+\usepackage{booktabs}
+\usepackage[load-configurations=version-1]{siunitx} % newer version
+\theorembodyfont{\upshape}
+\theoremheaderfont{\scshape}
+\theorempostheader{:}
+\theoremsep{\newline}
+\newtheorem*{note}{Note}
+
+\jmlrproceedings{Skoltech 2019}{Bayesian methods course}
+
+\title[Bayesian manifold estimation]{Bayesian manifold estimation}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\DeclareMathOperator*{\argmin}{argmin}
+
+\author{\Name{Busovikov Vladimir}\\
+  \addr Skoltech, MIPT}
+% \date{}
+
+\begin{document}
+\maketitle
+
+
+\section{Introduction}
+
+In the last twenty years, there are  several novel nonlinear dimension reduction procedures appeared, such
+as Isomap (Tenenbaum, de Silva and Langford, 2000), LLE (Roweis and Saul, 2000) and its modification (Zhang and Wang, 2007), Laplacian eigenmaps (Belkin and Niyogi, 2003), and t-SNE (van der Maaten and Hinton, 2008).
+
+Besides its worth mention some recent works using  geometric multi retsolution analysis (Maggioni, Minsker and Strawn, 2016), local polynomial estimators (Aamari and Levrard, 2019) and numerical solution of PDE (Shi and Sun,2017).
+
+
+There are some methods which allows to handle with large noise, based on an optimization problem, such as mean-shift (Cheng, 1995) and its variants (Ozertem and Erdogmus, 2011), (Genovese et al., 2014).
+
+We now introduce new method based on tangent space estimation, which is able to handle with large-amplitude noise. All theoretical results are now in process.
+
+
+\section{Background and problem statement}
+
+Suppose we have data $\{X_n\}_{n=1}^N \subset \mathbb{R}^D$ sampled from uniform distribution on compact smooth manifold without boundaty $\mathcal{M}$. Let $\mathcal{M}$ have dimension $d < D$. Now let $\varepsilon$ be Gaussian unbiased noise, s.t. $\varepsilon \mid X$ has normal distribution and $\mathbb{E} \ (\varepsilon \mid X) = 0$. We observe noised sample
+
+$$ y_i = X_i + \varepsilon_i$$
+
+The problem of denoising observed sample can be formulated as problem of constructing estimation $\hat X$ which is close to $X$ in some way.
+
+\section{Purpose and definitions}
+
+A presentation of a \textbf{topological manifold} is a second countable Hausdorff space that is locally homeomorphic to a vector space, by a collection (called an atlas) of homeomorphisms called charts. The composition of one chart with the inverse of another chart is a function called a transition map, and defines a homeomorphism of an open subset of the linear space onto another open subset of the linear space.
+
+A \textbf{differentiable manifold} is a topological manifold equipped with an equivalence class of atlases whose transition maps are all differentiable. More generally, a $C^k$-manifold is a topological manifold with an atlas whose transition maps are all k-times continuously differentiable.
+
+
+
+\section{Algorithm}
+
+Main idea of our approach is to estimate not only recovered point $\hat X$ bat also tangent space to out manifold in point $\hat X_i$, which can be represented as projection matrix $\hat P_i$ onto tangent subspace.
+
+\begin{algorithm}[H]
+	\caption{Bayesian manifold estimator}
+	\label{algorithm}
+	\begin{algorithmic}[1]
+		\State The training sample $\Y_n = (Y_1, \dots, Y_n)$, the number of iterations 
+		$K$, a sequence of bandwidths $\{h_k : 1 \leq k \leq K\}$ 
+		and of regularizers $\{\beta_{k, i} : 1 \leq k \leq K, 1 \leq i \leq n\}$ are given.
+		\State Initialize $\Sigma_i\ind 0 = I_D$, $1 \leq i \leq n$.
+		\For{ \( k \) from \( 0 \) to \( K-1\)}
+		\State Compute the weights \( w_{ij}\ind{k} \) according to the formula
+		\[
+			w_{ij}\ind{k} = \K \left( \frac{(Y_j - Y_i)^T(\Sigma_i\ind k)^{-1}(Y_j - 
+			Y_i)}{h_k^2} \right), \quad 1 \leq i, j \leq n,
+		\]
+		where $\K(t)$ is a localizing kernel.
+		\State Compute
+		\begin{align*}
+			&
+			N_i = \sum\limits_{j=1}^n w_{ij}\ind k,
+			\\&
+			\mu_i = \frac1{N_i} \sum\limits_{j=1}^n w_{ij}\ind k Y_j,
+			\\&
+			\Sigma_i = \frac1{N_i} \sum\limits_{j=1}^n w_{ij}\ind k (Y_j - \mu_i)(Y_j - 
+			\mu_i)^T
+		\end{align*}
+		\State Sample $\Sigma_i^b \sim IW_p(\beta_{k, i} I_D + N_i \Sigma_i, N_i + D)$.
+		\State Put $\Sigma_i\ind{k+1} = \Sigma_i, \mu_i\ind{k+1} = \mu_i$.
+		\EndFor
+		\Return the estimates \( \widehat{X}_1 = \mu_1\ind K, \dots, 
+		\widehat{X}_n = \mu_n\ind K \).
+	\end{algorithmic}
+\end{algorithm}
+
+\section{Numerical experiments}
+
+Here are some experiments on deleting noise from artificial data. Figure 1 and 2 illustrate some simple examples. Parameters of algorithm were chosen to be approximately equal to noise amplitude. Also we can see importance of bayesian step for numerical stability. On figure 3 we can see results of two variations of algorithm: with bayesian step and without one. 
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.5]{exp_s.png} 
+    \caption{Green points - real data, blue points - noised observations, red points - result of algorithm}
+    \label{fig:my_label}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.5]{exp_roll.png} 
+    \caption{Green points - real data, blue points - noised observations, red points - result of algorithm}
+    \label{fig:my_label}
+\end{figure}
+
+
+
+% \begin{figure}[H]
+%     \centering
+%     \begin{subfigure}{.4\textwidth}
+%     \centering
+%     \includegraphics[scale=0.4]{circ_bayes.png} 
+%     \caption{With bayesian step}
+%     \end{subfigure}%
+    
+    
+%     \begin{subfigure}{.4\textwidth}
+%     \centering
+%     \includegraphics[scale=0.4]{circ_notbayes.png} 
+%     \caption{Without bayesian step}
+%     \end{subfigure}
+    
+%     \label{fig:my_label}
+% \end{figure}
+
+\begin{figure}[H]
+    \centering
+    {\includegraphics[width=5cm]{circ_bayes.png}}%
+    \qquad
+    {\includegraphics[width=5cm]{circ_notbayes.png}}%
+    \caption{Result of algirithm with bayesian step on the left and without it on the right}%
+    \label{fig:example}%
+\end{figure}
+
+
+\section{Discussion of results and plans}
+
+New algorithm seems to work well on simple artificial data, so it is time to try it on more complicated examples. 
+
+
+
+
+
+\begin{thebibliography}{99}
+\bibitem{isomap} Tenenbaum, J. B., de Silva, V. and Langford, J. C. (2000). A Global Geometric
+Framework for Nonlinear Dimensionality Reduction. Science 290 2319
+
+\bibitem{lle} Roweis, S. T.
+and
+Saul, L. K.
+(2000). Nonlinear dimensionality reduction by locally
+linear embedding.
+SCIENCE
+290
+2323–2326.
+
+\bibitem{lle2} Zhang, Z.
+and
+Wang, J.
+(2007). MLLE: Modified Locally Linear Embedding Using Mul-
+tiple Weights. In
+Advances in Neural Information Processing Systems 19
+(B. Sch ̈olkopf,
+J. C. Platt and T. Hoffman, eds.) 1593–1600. MIT Press.
+
+\bibitem{lalpas} Belkin, M.
+and
+Niyogi, P.
+(2003). Laplacian Eigenmaps for Dimensionality Reduction
+and Data Representation.
+Neural Comput.
+15
+1373–1396
+
+\bibitem{tsne} van der Maaten, L.
+and
+Hinton, G.
+(2008). Visualizing Data using t-SNE.
+Journal of
+Machine Learning Research
+9
+2579–2605.
+
+\bibitem{geom} Maggioni, M.
+,
+Minsker, S.
+and
+Strawn, N.
+(2016). Multiscale dictionary learning:
+non-asymptotic bounds and robustness.
+J. Mach. Learn. Res.
+17
+Paper No. 2, 51.
+
+\bibitem{polynom} Aamari, E.
+and
+Levrard, C.
+(2019). Nonasymptotic rates for manifold, tangent space
+and curvature estimation.
+Ann. Statist.
+47
+177–204.
+
+\bibitem{pde} Shi, Z.
+and
+Sun, J.
+(2017). Convergence of the point integral method for Laplace–Beltrami
+equation on point cloud.
+Research in the Mathematical Sciences
+4
+22
+
+\bibitem{meanshift} Cheng, Y.
+(1995). Mean Shift, Mode Seeking, and Clustering.
+IEEE Trans. Pattern Anal.
+Mach. Intell.
+17
+790–799
+
+\bibitem{meanshift2} Ozertem, U.
+and
+Erdogmus, D.
+(2011). Locally defined principal curves and surfaces.
+J. Mach. Learn. Res.
+12
+1249–1286
+
+
+
+
+
+\end{thebibliography}{}
+
+
+
+
+
+\end{document}
+
+
+
