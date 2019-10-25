@@ -65,12 +65,12 @@
 \section{Introduction}
 
 In the last twenty years, there are  several novel nonlinear dimension reduction procedures appeared, such
-as Isomap (Tenenbaum, de Silva and Langford, 2000), LLE (Roweis and Saul, 2000) and its modification (Zhang and Wang, 2007), Laplacian eigenmaps (Belkin and Niyogi, 2003), and t-SNE (van der Maaten and Hinton, 2008).
+as Isomap  \cite{isomap} , LLE \cite{lle} and its modification \cite{lle2}, Laplacian eigenmaps \cite{laplas}, and t-SNE \cite{tsne}.
 
-Besides its worth mention some recent works using  geometric multi retsolution analysis (Maggioni, Minsker and Strawn, 2016), local polynomial estimators (Aamari and Levrard, 2019) and numerical solution of PDE (Shi and Sun,2017).
+Besides its worth mention some recent works using  geometric multi retsolution analysis \cite{geom}, local polynomial estimators \cite{polynom} and numerical solution of PDE \cite{pde}.
 
 
-There are some methods which allows to handle with large noise, based on an optimization problem, such as mean-shift (Cheng, 1995) and its variants (Ozertem and Erdogmus, 2011), (Genovese et al., 2014).
+There are some methods which allows to handle with large noise, based on an optimization problem, such as mean-shift \cite{meanshift} and its variants \cite{meanshift2}, \cite{ldmm}.
 
 We now introduce new method based on tangent space estimation, which is able to handle with large-amplitude noise. All theoretical results are now in process.
 
@@ -131,6 +131,34 @@ Main idea of our approach is to estimate not only recovered point $\hat X$ bat a
 \section{Numerical experiments}
 
 Here are some experiments on deleting noise from artificial data. Figure 1 and 2 illustrate some simple examples. Parameters of algorithm were chosen to be approximately equal to noise amplitude. Also we can see importance of bayesian step for numerical stability. On figure 3 we can see results of two variations of algorithm: with bayesian step and without one. 
+
+On Figures 1-3 noise is uniform with different amplitudes $A$.
+
+\begin{center}
+    
+
+\begin{tabular}{|c|c|c|c|}
+    \hline
+    & Figure 1 & Figure 2 & Figure 3 \\
+    \hline
+    noise amplitude &  0.3 & 1.25 & 0.1 \\
+    \hline
+    number of iterations &19& 10 & 10\\
+    \hline
+    \tau & 0.9 & 4.0 & 0.4 \\
+    \hline
+    h_k &
+    0.6*1.15^{1-k}, k = \overline{1, 19} &
+    2.5 * 1.1^(1-k), k = \overline{1, 10} &
+    0.3 * 1.1^(1-k), k = \overline{1, 10} \\
+    \hline  
+\end{tabular}
+\end{center}
+
+In all experiments ecxept one there there is no bayesian step, loss almost stopped to change after 1-3 iterations.
+
+
+
 
 \begin{figure}[H]
     \centering
@@ -206,7 +234,7 @@ Advances in Neural Information Processing Systems 19
 (B. Sch ̈olkopf,
 J. C. Platt and T. Hoffman, eds.) 1593–1600. MIT Press.
 
-\bibitem{lalpas} Belkin, M.
+\bibitem{laplas} Belkin, M.
 and
 Niyogi, P.
 (2003). Laplacian Eigenmaps for Dimensionality Reduction
@@ -269,7 +297,9 @@ J. Mach. Learn. Res.
 1249–1286
 
 
-
+\bibitem{ldmm} Stanley Osher, Zuoqiang Shi, and Wei Zhu, “Low dimensional manifold model for image processing,” SIAM
+Journal on Imaging Sciences, vol. 10, no. 4, pp. 1669–
+1690, 2017.
 
 
 \end{thebibliography}{}
@@ -279,6 +309,3 @@ J. Mach. Learn. Res.
 
 
 \end{document}
-
-
-
